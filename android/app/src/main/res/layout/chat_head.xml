@@ -13,14 +13,5 @@
         android:background="@drawable/circle_shape"
         android:clipToOutline="true"/>
 
-    <!-- Close Button -->
-    <ImageView
-        android:id="@+id/closeChatHead"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:src="@android:drawable/ic_delete"
-        android:background="@drawable/circle_shape"
-        android:padding="4dp"/>
+    
 </RelativeLayout>

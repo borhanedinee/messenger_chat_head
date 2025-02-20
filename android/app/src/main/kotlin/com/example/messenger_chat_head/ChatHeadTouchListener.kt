@@ -1,15 +1,19 @@
 package com.example.messenger_chat_head
 
+import android.animation.ValueAnimator
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.animation.ValueAnimator
+import android.widget.ImageView
 
 class ChatHeadTouchListener(
     private val params: WindowManager.LayoutParams,
+    private val closeParams: WindowManager.LayoutParams?,
     private val windowManager: WindowManager,
-    private val onPositionChanged: (Int, Int) -> Unit  // Added callback parameter
+    private val closeButton: ImageView?,
+    private val onPositionChanged: (Int, Int) -> Unit
 ) : View.OnTouchListener {
+
     private var initialX = 0
     private var initialY = 0
     private var touchX = 0f
@@ -22,30 +26,45 @@ class ChatHeadTouchListener(
                 initialY = params.y
                 touchX = event.rawX
                 touchY = event.rawY
+
+                // Show close button smoothly
+                closeButton?.animate()?.alpha(1f)?.setDuration(200)?.start()
+
                 return true
             }
 
             MotionEvent.ACTION_MOVE -> {
                 params.x = initialX + (event.rawX - touchX).toInt()
                 params.y = initialY + (event.rawY - touchY).toInt()
+
+                // Update chat head position
                 windowManager.updateViewLayout(view, params)
-                onPositionChanged(params.x, params.y)  // Invoke callback
+
+                // Move close button dynamically
+                updateCloseButtonPosition()
+
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
-                snapToEdge(view)
+                snapToNearestEdge(view)
+                closeButton?.animate()?.alpha(1f)?.setDuration(200)?.start()
                 return true
             }
         }
         return false
     }
 
-    private fun snapToEdge(view: View) {
+    private fun snapToNearestEdge(view: View) {
         val screenWidth = windowManager.defaultDisplay.width
-        val centerX = screenWidth / 2
-        val targetX = if (params.x < centerX) 0 else screenWidth - view.width
+        val chatHeadCenterX = params.x + view.width / 2
+        val targetX = if (chatHeadCenterX < screenWidth / 2) 0 else screenWidth - view.width
+
+        // Animate chat head to nearest edge
         animateChatHeadToEdge(view, targetX)
+
+        // Animate close button to move along
+        animateCloseButton(targetX)
     }
 
     private fun animateChatHeadToEdge(view: View, targetX: Int) {
@@ -56,5 +75,25 @@ class ChatHeadTouchListener(
             windowManager.updateViewLayout(view, params)
         }
         animator.start()
+    }
+
+    private fun animateCloseButton(targetX: Int) {
+        closeParams?.let { params ->
+            val animator = ValueAnimator.ofInt(params.x, targetX)
+            animator.duration = 300
+            animator.addUpdateListener { valueAnimator ->
+                params.x = valueAnimator.animatedValue as Int
+                windowManager.updateViewLayout(closeButton, params)
+            }
+            animator.start()
+        }
+    }
+
+    private fun updateCloseButtonPosition() {
+        closeParams?.apply {
+            x = params.x
+            y = params.y - 150
+            windowManager.updateViewLayout(closeButton, this)
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.messenger_chat_head
 
+import android.animation.ObjectAnimator
 import android.app.Service
 import android.content.Intent
 import android.graphics.PixelFormat
@@ -13,15 +14,14 @@ import android.widget.ImageView
 class ChatHeadService : Service() {
     private lateinit var windowManager: WindowManager
     private val chatHeadViews = mutableMapOf<String, View>()
-    private lateinit var closeButton: ImageView
-    private lateinit var closeParams: WindowManager.LayoutParams
+    private var closeButton: ImageView? = null
+    private var closeParams: WindowManager.LayoutParams? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-        setupCloseButton()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -34,32 +34,7 @@ class ChatHeadService : Service() {
             val icon = intent.getStringExtra("ICON_NAME") ?: return START_NOT_STICKY
             createChatHead(id, icon)
         }
-
         return START_STICKY
-    }
-
-    private fun setupCloseButton() {
-        closeButton = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_delete)
-            visibility = View.GONE
-        }
-
-        closeParams = WindowManager.LayoutParams(
-            100, 100,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = 0
-            y = 0
-        }
-
-        windowManager.addView(closeButton, closeParams)
-
-        closeButton.setOnClickListener {
-            removeCurrentChatHead()
-        }
     }
 
     private fun createChatHead(id: String, icon: String) {
@@ -67,6 +42,7 @@ class ChatHeadService : Service() {
 
         val chatHeadView = LayoutInflater.from(this).inflate(R.layout.chat_head, null)
         val imageView = chatHeadView.findViewById<ImageView>(R.id.chatHeadIcon)
+
         val resourceId = resources.getIdentifier(icon, "drawable", packageName)
         imageView.setImageResource(resourceId)
 
@@ -78,38 +54,61 @@ class ChatHeadService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 100
-            y = 100
+            x = 50
+            y = 200
         }
 
         windowManager.addView(chatHeadView, params)
 
-        chatHeadView.setOnTouchListener(ChatHeadTouchListener(params, windowManager) { newX, newY ->
-            closeParams.x = if (newX > resources.displayMetrics.widthPixels / 2) newX - 100 else newX + 100
-            closeParams.y = newY - 100
-            windowManager.updateViewLayout(closeButton, closeParams)
-            closeButton.visibility = View.VISIBLE
+        // Close button logic
+        if (closeButton == null) {
+            closeButton = ImageView(this).apply {
+                setImageResource(android.R.drawable.ic_delete)
+                alpha = 0f  // Initially hidden
+            }
+            closeParams = WindowManager.LayoutParams(
+                120, 120,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = Gravity.TOP or Gravity.START
+                x = params.x
+                y = params.y - 150
+            }
+            windowManager.addView(closeButton, closeParams)
+        }
+
+        // Attach touch listener to chat head
+        chatHeadView.setOnTouchListener(ChatHeadTouchListener(params, closeParams, windowManager, closeButton) { newX, newY ->
+            updateCloseButtonPosition(newX, newY)
         })
 
         chatHeadViews[id] = chatHeadView
+
+        closeButton?.setOnClickListener {
+            removeChatHead(id)
+        }
     }
 
-    private fun removeCurrentChatHead() {
-        if (chatHeadViews.isNotEmpty()) {
-            val firstKey = chatHeadViews.keys.firstOrNull() ?: return
-            val view = chatHeadViews.remove(firstKey)
-            if (view != null) {
-                windowManager.removeView(view)
-            }
+    private fun updateCloseButtonPosition(x: Int, y: Int) {
+        closeParams?.apply {
+            this.x = x
+            this.y = y - 150
+            windowManager.updateViewLayout(closeButton, this)
         }
-        closeButton.visibility = View.GONE
     }
 
     private fun removeChatHead(id: String) {
         val view = chatHeadViews.remove(id) ?: return
         windowManager.removeView(view)
+
         if (chatHeadViews.isEmpty()) {
-            closeButton.visibility = View.GONE
+            closeButton?.let {
+                windowManager.removeView(it)
+                closeButton = null
+                closeParams = null
+            }
         }
     }
 
@@ -117,6 +116,10 @@ class ChatHeadService : Service() {
         super.onDestroy()
         chatHeadViews.values.forEach { windowManager.removeView(it) }
         chatHeadViews.clear()
-        windowManager.removeView(closeButton)
+        closeButton?.let {
+            windowManager.removeView(it)
+            closeButton = null
+            closeParams = null
+        }
     }
 }
