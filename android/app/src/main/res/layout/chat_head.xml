@@ -1,0 +1,26 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <!-- Circular Profile Image -->
+    <ImageView
+        android:id="@+id/chatHeadIcon"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_chat_head"
+        android:background="@drawable/circle_shape"
+        android:clipToOutline="true"/>
+
+    <!-- Close Button -->
+    <ImageView
+        android:id="@+id/closeChatHead"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:src="@android:drawable/ic_delete"
+        android:background="@drawable/circle_shape"
+        android:padding="4dp"/>
+</RelativeLayout>
