@@ -15,7 +15,7 @@ class _OnBoardingState extends State<OnBoarding> {
   @override
   void initState() {
     Future.delayed(const Duration(seconds: 2), () {
-      Get.to(
+      Get.off(
          ConversationsScreen(),
       );
     });

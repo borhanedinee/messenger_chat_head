@@ -11,7 +11,6 @@ class ChatHeadTouchListener(
     private val closeParams: WindowManager.LayoutParams?,
     private val windowManager: WindowManager,
     private val closeButton: ImageView?,
-    private val onPositionChanged: (Int, Int) -> Unit
 ) : View.OnTouchListener {
 
     private var initialX = 0

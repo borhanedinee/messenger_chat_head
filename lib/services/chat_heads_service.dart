@@ -10,6 +10,7 @@ class ChatHeadService {
   static Future<void> startChatHead(String icon) async {
     try {
       // Check if overlay permission is granted
+
       if (!await FlutterOverlayWindow.isPermissionGranted()) {
         bool? granted = await FlutterOverlayWindow.requestPermission();
         if (!granted!) {
