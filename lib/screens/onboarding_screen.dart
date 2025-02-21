@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:messenger_chat_head/screens/conversations_screen.dart';
 
+import 'package:lottie/lottie.dart';
+
 class OnBoarding extends StatefulWidget {
   const OnBoarding({super.key});
 
@@ -25,10 +27,8 @@ class _OnBoardingState extends State<OnBoarding> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        child: const Center(
-          child: const Text('OnBoarding Screen'),
-        ),
+      body: Center(
+        child: Lottie.asset('assets/lottie/loading_messages_lottie.json'),
       ),
     );
   }

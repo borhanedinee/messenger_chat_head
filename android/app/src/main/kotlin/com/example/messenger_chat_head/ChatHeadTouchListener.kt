@@ -54,10 +54,7 @@ class ChatHeadTouchListener(
             MotionEvent.ACTION_MOVE -> {
                 params.x = initialX + (event.rawX - touchX).toInt()
                 params.y = initialY + (event.rawY - touchY).toInt()
-
-                println("params.x: ${params.x}")
-                println("params.y: ${params.y}")
-
+                
                 // Update chat head position
                 windowManager.updateViewLayout(view, params)
 

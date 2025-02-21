@@ -10,28 +10,28 @@ class ConversationsScreen extends StatelessWidget {
     {
       'id': '1',
       'name': 'John Doe',
-      'lastMessage': 'Hey! How are you?',
+      'lastMessage': "I'm doing great! Just wor...",
       'time': DateTime.now().subtract(const Duration(minutes: 5)),
       'profilePic': 'userone.png'
     },
     {
       'id': '2',
       'name': 'Jane Smith',
-      'lastMessage': 'Let’s catch up tomorrow!',
+      'lastMessage': 'Yeah, I especially like the new UI ...',
       'time': DateTime.now().subtract(const Duration(hours: 1)),
       'profilePic': 'usertwo.png'
     },
     {
       'id': '3',
       'name': 'Alex Johnson',
-      'lastMessage': 'Can you send the files?',
+      'lastMessage': 'Alright, see you then!',
       'time': DateTime.now().subtract(const Duration(hours: 3)),
       'profilePic': 'userthree.png'
     },
     {
       'id': '4',
       'name': 'Emma Brown',
-      'lastMessage': 'Thanks! See you later.',
+      'lastMessage': 'Sounds good!',
       'time': DateTime.now().subtract(const Duration(days: 1)),
       'profilePic': 'userfour.png'
     },
