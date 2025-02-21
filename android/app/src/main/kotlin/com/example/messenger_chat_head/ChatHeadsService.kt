@@ -80,42 +80,56 @@ class ChatHeadService : Service() {
 
         windowManager.addView(chatHeadView, params)
 
-        // Close button logic
-        val closeButton = ImageView(this).apply {
-            setImageResource(android.R.drawable.ic_delete)
-                alpha = 1f  // Initially hidden
-        }
-        val closeParams = WindowManager.LayoutParams(
-            120, 120,
+        // calculating screen dimensions to position delete button
+        val displayMetrics = applicationContext.resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val screenHeight = displayMetrics.heightPixels
+
+        val deleteCircleParams = WindowManager.LayoutParams(
+            150, // Width
+            150, // Height
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT
         ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = params.x
-            y = params.y - 150
+            y = 700
+            x = 0
         }
-        windowManager.addView(closeButton, closeParams)
+
+        val deleteCircle = ImageView(this).apply {
+            setImageResource(android.R.drawable.ic_delete) // Your delete icon
+            alpha = 0f // Initially hidden
+            // y = (screenHeight - 200).toFloat()
+            // x = (screenWidth / 2).toFloat() 
+        }
+
+        windowManager.addView(deleteCircle, deleteCircleParams)
         
 
         // Attach touch listener to chat head
-        chatHeadView.setOnTouchListener(ChatHeadTouchListener(applicationContext , params, closeParams, windowManager, closeButton , methodChannel , id , icon , name))
+        chatHeadView.setOnTouchListener(ChatHeadTouchListener(applicationContext , params, windowManager, methodChannel , id , icon , name , deleteCircle , deleteCircleParams)
+            {
+                println("Debug message here")
+                activeIcons.remove(icon)
+                windowManager.removeView(chatHeadView) // Remove chat head
+            }
+        )
         
 
         chatHeadViews[id] = chatHeadView
-        closeButtonsViews[id] = closeButton
+        // closeButtonsViews[id] = closeButton
         activeIcons[icon] = chatHeadView
 
-        closeButton?.setOnClickListener {
-            removeChatHead(id , icon)
-        }
+        // closeButton?.setOnClickListener {
+        //     removeChatHead(id , icon)
+        // }
     }
 
     private fun removeChatHead(id: String , icon: String) {
         val view = chatHeadViews.remove(id) ?: return
-        val closeButtonView = closeButtonsViews.remove(id) ?: return
+        // val closeButtonView = closeButtonsViews.remove(id) ?: return
         windowManager.removeView(view) 
-        windowManager.removeView(closeButtonView) 
+        // windowManager.removeView(closeButtonView) 
         activeIcons.remove(icon)
 
     }

@@ -9,18 +9,23 @@ import android.widget.ImageView
 import android.widget.Toast
 
 import io.flutter.plugin.common.MethodChannel
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.sqrt
+import androidx.core.animation.doOnEnd
 
 
 class ChatHeadTouchListener(
     private val context: Context,
     private val params: WindowManager.LayoutParams,
-    private val closeParams: WindowManager.LayoutParams?,
     private val windowManager: WindowManager,
-    private val closeButton: ImageView?,
     private val methodChannel: MethodChannel?,
     private val id: String,
     private val icon: String,
-    private val name: String
+    private val name: String,
+    private val deleteCircle: ImageView,
+    private val deleteCircleParams: WindowManager.LayoutParams,
+    private val onRemove: () -> Unit
 ) : View.OnTouchListener {
 
     private var initialX = 0
@@ -37,8 +42,8 @@ class ChatHeadTouchListener(
                 touchX = event.rawX
                 touchY = event.rawY
 
-                // Show close button smoothly
-                closeButton?.animate()?.alpha(1f)?.setDuration(200)?.start()
+                // Show delete circle
+                deleteCircle.animate().alpha(1f).setDuration(200).start()
 
                 return true
             }
@@ -47,34 +52,38 @@ class ChatHeadTouchListener(
                 params.x = initialX + (event.rawX - touchX).toInt()
                 params.y = initialY + (event.rawY - touchY).toInt()
 
+                println("params.x: ${params.x}")
+                println("params.y: ${params.y}")
+
                 // Update chat head position
                 windowManager.updateViewLayout(view, params)
-
-                // Move close button dynamically
-                updateCloseButtonPosition()
 
                 return true
             }
 
             MotionEvent.ACTION_UP -> {
-                val deltaX = Math.abs(event.rawX - touchX)
-                val deltaY = Math.abs(event.rawY - touchY)
+                val deltaX = abs(event.rawX - touchX)
+                val deltaY = abs(event.rawY - touchY)
 
-                // If movement is small, treat it as a click
                 if (deltaX < CLICK_THRESHOLD && deltaY < CLICK_THRESHOLD) {
+                    // Treat as a click
                     Toast.makeText(context, "Opening conversation...", Toast.LENGTH_SHORT).show()
                     val arguments = mapOf(
-                            "id" to id, 
-                            "icon" to icon,
-                            "name" to name
-                        )
+                        "id" to id, 
+                        "icon" to icon,
+                        "name" to name
+                    )
                     methodChannel?.invokeMethod("open_chat", arguments)
                 } else {
-                    snapToNearestEdge(view)
+                    if (isNearDeleteCircle(view)) {
+                        animateAndRemoveChatHead(view)  // Animate then remove
+                    } else {
+                        snapToNearestEdge(view)  // Return to screen edge
+                    }
                 }
 
-                // Hide close button smoothly
-                closeButton?.animate()?.alpha(1f)?.setDuration(200)?.start()
+                // Hide delete circle
+                deleteCircle.animate().alpha(0f).setDuration(200).start()
 
                 return true
             }
@@ -82,16 +91,52 @@ class ChatHeadTouchListener(
         return false
     }
 
+    private fun isNearDeleteCircle(view: View): Boolean {
+        val deleteX = 470
+        val deleteY = 1640
+
+        val distance = sqrt(
+            (params.x - deleteX).toDouble().pow(2.0) +
+            (params.y - deleteY).toDouble().pow(2.0)
+        )
+
+        return distance < 300 // Threshold for snapping
+    }
+
+    private fun animateAndRemoveChatHead(view: View) {
+        val deleteX = 472
+        val deleteY = 1671
+
+        val animatorX = ValueAnimator.ofInt(params.x, deleteX)
+        val animatorY = ValueAnimator.ofInt(params.y, deleteY)
+
+        animatorX.addUpdateListener { animation ->
+            params.x = animation.animatedValue as Int
+            windowManager.updateViewLayout(view, params)
+        }
+
+        animatorY.addUpdateListener { animation ->
+            params.y = animation.animatedValue as Int
+            windowManager.updateViewLayout(view, params)
+        }
+
+        animatorX.duration = 300
+        animatorY.duration = 300
+        animatorX.start()
+        animatorY.start()
+
+        animatorY.doOnEnd {
+            onRemove() // Remove chat head after animation
+        }
+    }
+    
+
     private fun snapToNearestEdge(view: View) {
         val screenWidth = windowManager.defaultDisplay.width
         val chatHeadCenterX = params.x + view.width / 2
         val targetX = if (chatHeadCenterX < screenWidth / 2) 0 else screenWidth - view.width
 
-        // Animate chat head to nearest edge
         animateChatHeadToEdge(view, targetX)
-
-        // Animate close button to move along
-        animateCloseButton(targetX)
     }
 
     private fun animateChatHeadToEdge(view: View, targetX: Int) {
@@ -102,25 +147,5 @@ class ChatHeadTouchListener(
             windowManager.updateViewLayout(view, params)
         }
         animator.start()
-    }
-
-    private fun animateCloseButton(targetX: Int) {
-        closeParams?.let { params ->
-            val animator = ValueAnimator.ofInt(params.x, targetX)
-            animator.duration = 300
-            animator.addUpdateListener { valueAnimator ->
-                params.x = valueAnimator.animatedValue as Int
-                windowManager.updateViewLayout(closeButton, params)
-            }
-            animator.start()
-        }
-    }
-
-    private fun updateCloseButtonPosition() {
-        closeParams?.apply {
-            x = params.x
-            y = params.y - 150
-            windowManager.updateViewLayout(closeButton, this)
-        }
     }
 }
