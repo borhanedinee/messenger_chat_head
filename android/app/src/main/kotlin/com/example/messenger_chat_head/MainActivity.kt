@@ -27,7 +27,8 @@ class MainActivity : FlutterActivity() {
                 "startChatHead" -> {
                     val id = call.argument<String>("id") ?: return@setMethodCallHandler
                     val icon = call.argument<String>("icon") ?: return@setMethodCallHandler
-                    startChatHead(id, icon)
+                    val name = call.argument<String>("name") ?: return@setMethodCallHandler
+                    startChatHead(id, icon , name)
                     result.success(null)
                 }
                 "removeChatHead" -> {
@@ -40,10 +41,11 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun startChatHead(id: String, icon: String) {
+    private fun startChatHead(id: String, icon: String , name: String) {
         val serviceIntent = Intent(this, ChatHeadService::class.java).apply {
             putExtra("CHAT_ID", id)
             putExtra("ICON_NAME", icon)
+            putExtra("NAME", name)
         }
         startService(serviceIntent)
     }

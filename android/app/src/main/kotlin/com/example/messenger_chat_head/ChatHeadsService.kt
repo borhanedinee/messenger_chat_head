@@ -40,6 +40,7 @@ class ChatHeadService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val id = intent?.getStringExtra("CHAT_ID") ?: return START_NOT_STICKY
+        val name = intent?.getStringExtra("NAME") ?: return START_NOT_STICKY
         val action = intent.action
 
         if (action == "REMOVE_CHAT_HEAD") {
@@ -47,12 +48,12 @@ class ChatHeadService : Service() {
             removeChatHead(id , icon)
         } else {
             val icon = intent.getStringExtra("ICON_NAME") ?: return START_NOT_STICKY
-            createChatHead(id, icon)
+            createChatHead(id, icon , name)
         }
         return START_STICKY
     }
 
-    private fun createChatHead(id: String, icon: String) {
+    private fun createChatHead(id: String, icon: String , name: String) {
         if (activeIcons.containsKey(icon)) {
             Toast.makeText(applicationContext, "Chat head already exists!", Toast.LENGTH_SHORT).show()
             return
@@ -98,7 +99,7 @@ class ChatHeadService : Service() {
         
 
         // Attach touch listener to chat head
-        chatHeadView.setOnTouchListener(ChatHeadTouchListener(applicationContext , params, closeParams, windowManager, closeButton , methodChannel , id))
+        chatHeadView.setOnTouchListener(ChatHeadTouchListener(applicationContext , params, closeParams, windowManager, closeButton , methodChannel , id , icon , name))
         
 
         chatHeadViews[id] = chatHeadView

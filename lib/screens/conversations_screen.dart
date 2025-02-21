@@ -133,6 +133,7 @@ class ConversationsScreen extends StatelessWidget {
                             .toString()
                             .replaceFirst(RegExp(r'\.png$'), ''),
                         conversation['id'],
+                        conversation['name']
                       );
                     },
                   );
@@ -146,7 +147,7 @@ class ConversationsScreen extends StatelessWidget {
   }
 
   Future<dynamic> showModalWhenLongPressConvo(
-      BuildContext context, String icon , id) {
+      BuildContext context, String icon , id , String name) {
     return showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -155,7 +156,7 @@ class ConversationsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _openChatHeadTile(icon , id),
+              _openChatHeadTile(icon , id , name),
               _blockUserTile(context),
             ],
           ),
@@ -175,12 +176,12 @@ class ConversationsScreen extends StatelessWidget {
     );
   }
 
-  ListTile _openChatHeadTile(String icon ,String id) {
+  ListTile _openChatHeadTile(String icon ,String id , String name) {
     return ListTile(
       leading: const Icon(Icons.chat_bubble_outline),
       title: const Text('Open Chat Head'),
       onTap: () {
-        ChatHeadService.startChatHead(icon , id);
+        ChatHeadService.startChatHead(icon , id , name);
       },
     );
   }

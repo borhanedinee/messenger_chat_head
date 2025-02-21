@@ -18,7 +18,9 @@ class ChatHeadTouchListener(
     private val windowManager: WindowManager,
     private val closeButton: ImageView?,
     private val methodChannel: MethodChannel?,
-    private val id: String
+    private val id: String,
+    private val icon: String,
+    private val name: String
 ) : View.OnTouchListener {
 
     private var initialX = 0
@@ -61,7 +63,12 @@ class ChatHeadTouchListener(
                 // If movement is small, treat it as a click
                 if (deltaX < CLICK_THRESHOLD && deltaY < CLICK_THRESHOLD) {
                     Toast.makeText(context, "Opening conversation...", Toast.LENGTH_SHORT).show()
-                    methodChannel?.invokeMethod("open_chat", id)
+                    val arguments = mapOf(
+                            "id" to id, 
+                            "icon" to icon,
+                            "name" to name
+                        )
+                    methodChannel?.invokeMethod("open_chat", arguments)
                 } else {
                     snapToNearestEdge(view)
                 }
