@@ -14,6 +14,9 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 import androidx.core.animation.doOnEnd
 
+import android.content.Intent
+
+
 
 class ChatHeadTouchListener(
     private val context: Context,
@@ -68,6 +71,7 @@ class ChatHeadTouchListener(
                 if (deltaX < CLICK_THRESHOLD && deltaY < CLICK_THRESHOLD) {
                     // Treat as a click
                     Toast.makeText(context, "Opening conversation...", Toast.LENGTH_SHORT).show()
+                    openApp()
                     val arguments = mapOf(
                         "id" to id, 
                         "icon" to icon,
@@ -92,6 +96,9 @@ class ChatHeadTouchListener(
     }
 
     private fun isNearDeleteCircle(view: View): Boolean {
+        // values determined manually after debugging
+        // these values determine the position of the delete button in function of 
+        // position of chat head ( x and y )
         val deleteX = 470
         val deleteY = 1640
 
@@ -104,6 +111,9 @@ class ChatHeadTouchListener(
     }
 
     private fun animateAndRemoveChatHead(view: View) {
+        // values determined manually after debugging
+        // these values determine the position of the delete button in function of 
+        // position of chat head ( x and y )
         val deleteX = 472
         val deleteY = 1671
 
@@ -129,7 +139,18 @@ class ChatHeadTouchListener(
             onRemove() // Remove chat head after animation
         }
     }
-    
+
+    private fun openApp() {
+        val packageName = context.packageName // Get your app's package name
+        val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+        if (launchIntent != null) {
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) // Ensure it opens in a new task
+            context.startActivity(launchIntent)
+        } else {
+            Toast.makeText(context, "Unable to open app", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     private fun snapToNearestEdge(view: View) {
         val screenWidth = windowManager.defaultDisplay.width
