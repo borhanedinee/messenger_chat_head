@@ -12,6 +12,8 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.Toast
 
+import io.flutter.embedding.engine.FlutterEngineCache
+import io.flutter.plugin.common.MethodChannel
 
 class ChatHeadService : Service() {
     private lateinit var windowManager: WindowManager
@@ -22,9 +24,18 @@ class ChatHeadService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    private val CHANNEL = "chat_head_channel"
+    private var methodChannel: MethodChannel? = null
+
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
+
+        // Get the cached Flutter engine
+        val flutterEngine = FlutterEngineCache.getInstance().get("chat_head_engine")
+        if (flutterEngine != null) {
+            methodChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -87,7 +98,8 @@ class ChatHeadService : Service() {
         
 
         // Attach touch listener to chat head
-        chatHeadView.setOnTouchListener(ChatHeadTouchListener(params, closeParams, windowManager, closeButton))
+        chatHeadView.setOnTouchListener(ChatHeadTouchListener(applicationContext , params, closeParams, windowManager, closeButton , methodChannel , id))
+        
 
         chatHeadViews[id] = chatHeadView
         closeButtonsViews[id] = closeButton

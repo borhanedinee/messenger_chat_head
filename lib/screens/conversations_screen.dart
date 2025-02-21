@@ -8,24 +8,28 @@ import 'package:messenger_chat_head/services/chat_heads_service.dart';
 class ConversationsScreen extends StatelessWidget {
   final List<Map<String, dynamic>> conversations = [
     {
+      'id': '1',
       'name': 'John Doe',
       'lastMessage': 'Hey! How are you?',
       'time': DateTime.now().subtract(const Duration(minutes: 5)),
       'profilePic': 'userone.png'
     },
     {
+      'id': '2',
       'name': 'Jane Smith',
       'lastMessage': 'Let’s catch up tomorrow!',
       'time': DateTime.now().subtract(const Duration(hours: 1)),
       'profilePic': 'usertwo.png'
     },
     {
+      'id': '3',
       'name': 'Alex Johnson',
       'lastMessage': 'Can you send the files?',
       'time': DateTime.now().subtract(const Duration(hours: 3)),
       'profilePic': 'userthree.png'
     },
     {
+      'id': '4',
       'name': 'Emma Brown',
       'lastMessage': 'Thanks! See you later.',
       'time': DateTime.now().subtract(const Duration(days: 1)),
@@ -128,6 +132,7 @@ class ConversationsScreen extends StatelessWidget {
                         conversation['profilePic']
                             .toString()
                             .replaceFirst(RegExp(r'\.png$'), ''),
+                        conversation['id'],
                       );
                     },
                   );
@@ -141,7 +146,7 @@ class ConversationsScreen extends StatelessWidget {
   }
 
   Future<dynamic> showModalWhenLongPressConvo(
-      BuildContext context, String icon) {
+      BuildContext context, String icon , id) {
     return showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -150,7 +155,7 @@ class ConversationsScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _openChatHeadTile(icon),
+              _openChatHeadTile(icon , id),
               _blockUserTile(context),
             ],
           ),
@@ -170,12 +175,12 @@ class ConversationsScreen extends StatelessWidget {
     );
   }
 
-  ListTile _openChatHeadTile(String icon) {
+  ListTile _openChatHeadTile(String icon ,String id) {
     return ListTile(
       leading: const Icon(Icons.chat_bubble_outline),
       title: const Text('Open Chat Head'),
       onTap: () {
-        ChatHeadService.startChatHead(icon);
+        ChatHeadService.startChatHead(icon , id);
       },
     );
   }

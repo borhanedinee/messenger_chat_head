@@ -7,7 +7,7 @@ class ChatHeadService {
   static const MethodChannel _channel = MethodChannel('chat_head_channel');
 
   // Request Android to start a chat head with a unique ID
-  static Future<void> startChatHead(String icon) async {
+  static Future<void> startChatHead(String icon , String id) async {
     try {
       // Check if overlay permission is granted
 
@@ -26,7 +26,7 @@ class ChatHeadService {
 
       // Now invoke the method safely
       await _channel.invokeMethod('startChatHead', {
-        'id': DateTime.timestamp().microsecondsSinceEpoch.toString(),
+        'id': id,
         'icon': icon
       });
     } on PlatformException catch (e) {
